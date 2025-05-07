@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.17.0, 18.x, 20.x] # Ensure Node.js 16.17.0+ for Web Crypto support
+        node-version: [18.x, 20.x] # Using only Node.js versions with better Web Crypto API support
 
     steps:
     - uses: actions/checkout@v4
