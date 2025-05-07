@@ -23,5 +23,6 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
-    - run: npm test
+    - name: Run tests with Web Crypto support
+      run: NODE_OPTIONS=--experimental-global-webcrypto npm test
 
