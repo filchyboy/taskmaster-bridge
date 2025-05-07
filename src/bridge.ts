@@ -1,27 +1,50 @@
-import { JiraClient } from './jiraClient.js';
+import { JiraClient, JiraClientOptions } from './jiraClient.js';
 import { readTaskmasterFile, writeTaskmasterFile, TaskmasterTask } from './taskmaster.js';
-import { BridgeConfig } from '../config/defaultConfig.js';
+import { BridgeConfig, getJiraOptions, getProjectKey } from '../config/defaultConfig.js';
+
+// Legacy BridgeConfig interface for backward compatibility
+interface LegacyBridgeConfig {
+  projectKey: string;
+  batchSize: number;
+  jira: JiraClientOptions;
+}
 
 /** Export Taskmaster JSON to Jira */
-export async function exportToJira(file: string, cfg: BridgeConfig) {
+export async function exportToJira(file: string, cfg: BridgeConfig | LegacyBridgeConfig) {
   const data = readTaskmasterFile(file);
-  const jira = new JiraClient(cfg.jira);
+
+  // Handle both new and legacy config formats
+  const jiraOptions = 'jira' in cfg ? cfg.jira : getJiraOptions(cfg as BridgeConfig);
+  const jira = new JiraClient(jiraOptions);
+
+  // Get project key from either config format
+  const projectKey = 'projectKey' in cfg
+    ? cfg.projectKey
+    : getProjectKey(cfg as BridgeConfig);
 
   for (const task of data.tasks) {
-    await jira.upsertIssue(mapTaskmasterToJira(task, cfg));
+    await jira.upsertIssue(mapTaskmasterToJira(task, projectKey));
   }
   console.log('✅ Export complete');
 }
 
 /** Import Jira issues into Taskmaster JSON */
-export async function importFromJira(out: string, cfg: BridgeConfig) {
-  const jira = new JiraClient(cfg.jira);
-  const total = await jira.countIssues(cfg.projectKey);
+export async function importFromJira(out: string, cfg: BridgeConfig | LegacyBridgeConfig) {
+  // Handle both new and legacy config formats
+  const jiraOptions = 'jira' in cfg ? cfg.jira : getJiraOptions(cfg as BridgeConfig);
+  const jira = new JiraClient(jiraOptions);
+
+  // Get project key from either config format
+  const projectKey = 'projectKey' in cfg
+    ? cfg.projectKey
+    : getProjectKey(cfg as BridgeConfig);
+
+  const total = await jira.countIssues(projectKey);
   const tasks: TaskmasterTask[] = [];
   let fetched = 0;
 
   while (fetched < total) {
-    const issues = await jira.fetchIssues(cfg.projectKey, fetched, cfg.batchSize);
+    const issues = await jira.fetchIssues(projectKey, fetched, cfg.batchSize);
     tasks.push(...issues.map((i: any) => mapJiraToTaskmaster(i)));
     fetched += issues.length;
   }
@@ -31,15 +54,15 @@ export async function importFromJira(out: string, cfg: BridgeConfig) {
 }
 
 /** Diff: not yet implemented */
-export async function diffProjects(cfg: BridgeConfig) {
+export async function diffProjects(cfg: BridgeConfig | LegacyBridgeConfig) {
   console.log('🛈 diff not implemented yet');
 }
 
 // ──────────────────────────── mapping helpers ─────────────────────────────
-export function mapTaskmasterToJira(task: TaskmasterTask, cfg: BridgeConfig) {
+export function mapTaskmasterToJira(task: TaskmasterTask, projectKey: string) {
   return {
     fields: {
-      project: { key: cfg.projectKey },
+      project: { key: projectKey },
       summary: task.title,
       description: task.description ?? '',
       issuetype: { name: 'Story' },
