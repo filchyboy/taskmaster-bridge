@@ -12,7 +12,8 @@ program
   .description('Sync Taskmaster with issue tracking systems')
   .version('0.1.0')
   .option('-p, --project <key>', 'Project key (e.g., TEST for Jira)')
-  .option('-s, --service <type>', 'Service type (jira, linear)', 'jira');
+  .option('-s, --service <type>', 'Service type (jira, linear)', 'jira')
+  .option('-v, --verbose', 'Show verbose output', false);
 
 program
   .command('setup')
@@ -27,16 +28,21 @@ program
   .description('Create or update issues from Taskmaster export')
   .action(async (file) => {
     const globalOpts = program.opts();
+    const verbose = globalOpts.verbose;
+
+    if (verbose) {
+      console.log('🔍 Checking for configuration...');
+    }
 
     // Check if configuration exists
     const configPath = path.resolve('.taskmasterbridgerc');
     if (!fs.existsSync(configPath)) {
-      console.log('⚠️ No configuration found. Running setup wizard...');
+      console.log('⚠️ No configuration file found. Running setup wizard...');
       await runOnboarding();
       console.log('Setup complete. Now continuing with export...');
     }
 
-    const cfg = loadConfig();
+    const cfg = loadConfig(verbose);
 
     // Ensure we're using the right service type
     if (globalOpts.service && cfg.service.type !== globalOpts.service) {
@@ -69,16 +75,21 @@ program
   .description('Download issues and write Taskmaster‑style JSON')
   .action(async (opts) => {
     const globalOpts = program.opts();
+    const verbose = globalOpts.verbose;
+
+    if (verbose) {
+      console.log('🔍 Checking for configuration...');
+    }
 
     // Check if configuration exists
     const configPath = path.resolve('.taskmasterbridgerc');
     if (!fs.existsSync(configPath)) {
-      console.log('⚠️ No configuration found. Running setup wizard...');
+      console.log('⚠️ No configuration file found. Running setup wizard...');
       await runOnboarding();
       console.log('Setup complete. Now continuing with import...');
     }
 
-    const cfg = loadConfig();
+    const cfg = loadConfig(verbose);
 
     // Ensure we're using the right service type
     if (globalOpts.service && cfg.service.type !== globalOpts.service) {
@@ -110,16 +121,21 @@ program
   .description('Show differences between Taskmaster JSON and issue tracking system')
   .action(async () => {
     const globalOpts = program.opts();
+    const verbose = globalOpts.verbose;
+
+    if (verbose) {
+      console.log('🔍 Checking for configuration...');
+    }
 
     // Check if configuration exists
     const configPath = path.resolve('.taskmasterbridgerc');
     if (!fs.existsSync(configPath)) {
-      console.log('⚠️ No configuration found. Running setup wizard...');
+      console.log('⚠️ No configuration file found. Running setup wizard...');
       await runOnboarding();
       console.log('Setup complete. Now continuing with diff...');
     }
 
-    const cfg = loadConfig();
+    const cfg = loadConfig(verbose);
 
     // Ensure we're using the right service type
     if (globalOpts.service && cfg.service.type !== globalOpts.service) {

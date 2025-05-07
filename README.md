@@ -83,6 +83,22 @@ export LINEAR_API_KEY="your-linear-api-key"
 
 ## Usage
 
+### Global Options
+
+```bash
+# Show verbose output (credential sources, configuration details)
+taskmaster-bridge --verbose export tasks.json
+
+# Specify service type
+taskmaster-bridge --service jira export tasks.json
+
+# Specify project key
+taskmaster-bridge --project TEST export tasks.json
+
+# Combine options
+taskmaster-bridge --verbose --service jira --project TEST export tasks.json
+```
+
 ### Service Selection
 
 You can specify which service to use with the `--service` option:
@@ -93,6 +109,28 @@ taskmaster-bridge --service linear export tasks.json
 ```
 
 If not specified, it will use the service from your configuration file.
+
+### Verbose Mode
+
+Use the `--verbose` flag to see detailed information about:
+- Where credentials are being loaded from (environment variables or config file)
+- Which specific environment variables were found
+- Which configuration file is being used
+- Service-specific details
+
+```bash
+taskmaster-bridge --verbose export tasks.json
+```
+
+Example output:
+```
+🔍 Checking for configuration...
+📄 Found configuration file: .taskmasterbridgerc
+✅ Found environment variable: JIRA_EMAIL
+✅ Found environment variable: JIRA_TOKEN
+🔑 Using credentials from environment variables
+Using jira project key: TEST
+```
 
 ### Export Taskmaster → Issue Tracking System
 
