@@ -16,14 +16,16 @@ interface ImportOptions {
 /** Import Jira issues into Taskmaster JSON */
 export declare function importFromJira(out: string, cfg: BridgeConfig | LegacyBridgeConfig, verbose?: boolean, options?: ImportOptions): Promise<void>;
 /** Diff: not yet implemented */
-export declare function diffProjects(cfg: BridgeConfig | LegacyBridgeConfig): Promise<void>;
+export declare function diffProjects(_cfg: BridgeConfig | LegacyBridgeConfig): Promise<void>;
 /**
  * Map a Taskmaster task to a Jira issue
+ * @param task The Taskmaster task to convert
+ * @param projectKeyOrConfig Either a project key string or a BridgeConfig object
  */
-export declare function mapTaskmasterToJira(task: TaskmasterTask, projectKey: string): {
+export declare function mapTaskmasterToJira(task: TaskmasterTask, projectKeyOrConfig: string | BridgeConfig | LegacyBridgeConfig): {
     fields: {
         project: {
-            key: string;
+            key: any;
         };
         summary: string;
         description: {

@@ -27,7 +27,7 @@ This will guide you through configuring your issue tracking service:
 The setup process is smart about environment variables:
 - If credentials are found in your environment, they'll be used automatically
 - You'll only be prompted for values that aren't already set
-- The project key is always prompted for to keep it configurable per project
+- The project key is always configurable per project
 
 #### Jira Configuration
 If you choose Jira, you'll be prompted for:
@@ -36,7 +36,7 @@ If you choose Jira, you'll be prompted for:
 - Jira email address (if not found in environment)
 - Jira API token (if not found in environment, create one at https://id.atlassian.com/manage-profile/security/api-tokens)
 
-#### Linear Configuration
+#### Linear Configuration (TODO)
 If you choose Linear, you'll be prompted for:
 - Linear team key (if not found in environment)
 - Linear API key (if not found in environment, create one at https://linear.app/settings/api)
@@ -60,7 +60,7 @@ service:
 batchSize: 100
 ```
 
-#### Linear Configuration Example
+#### Linear Configuration Example (TODO)
 ```yaml
 service:
   type: linear
@@ -84,7 +84,7 @@ export JIRA_BASE_URL="https://your-company.atlassian.net"
 # export JIRA_PROJECT_KEY="TEST"
 ```
 
-#### For Linear
+#### For Linear (TODO)
 ```bash
 export LINEAR_TEAM_KEY="TEAM"
 export LINEAR_API_KEY="your-linear-api-key"
@@ -93,7 +93,7 @@ export LINEAR_API_KEY="your-linear-api-key"
 #### Environment Variable Behavior
 - When running `taskmaster-bridge setup`, existing environment variables will be detected and used
 - You'll only be prompted for values that aren't set in the environment
-- Project key is always prompted for during setup, even if set in environment
+- Project key is always prompted for during setup, even if set in environment, but can be set in options
 - Environment variables take precedence over values in the configuration file
 - You can check which environment variables are being used with the `--verbose` flag
 
@@ -203,7 +203,7 @@ You can:
 - Disable report generation with `--no-report`
 - Specify a custom report directory with `--report-dir custom/path`
 
-### Show Differences
+### Show Differences (TODO)
 
 ```bash
 taskmaster-bridge diff
@@ -224,7 +224,7 @@ taskmaster-bridge --service jira import -o jira_tasks.json
 taskmaster-bridge --service jira import -o jira_tasks.json --report-dir reports
 ```
 
-#### Linear-Specific (Coming Soon)
+#### Linear-Specific (TODO)
 
 ```bash
 # Export to Linear

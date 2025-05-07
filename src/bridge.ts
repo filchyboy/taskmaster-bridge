@@ -36,6 +36,8 @@ export async function exportToJira(file: string, cfg: BridgeConfig | LegacyBridg
 
   if (verbose) {
     console.log(`Exporting ${data.tasks.length} parent tasks and their subtasks to Jira project ${projectKey}...`);
+  } else {
+    console.log(`Exporting tasks to Jira...`);
   }
 
   let created = 0;
@@ -52,7 +54,13 @@ export async function exportToJira(file: string, cfg: BridgeConfig | LegacyBridg
     try {
       // Show progress
       if (!verbose) {
-        process.stdout.write(`\rExporting tasks... ${Math.round((processedCount / totalTasks) * 100)}%`);
+        // Create a simple progress bar
+        const percent = Math.round((processedCount / totalTasks) * 100);
+        const progressBarWidth = 30;
+        const filledWidth = Math.round((processedCount / totalTasks) * progressBarWidth);
+        const emptyWidth = progressBarWidth - filledWidth;
+        const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+        process.stdout.write(`\rExporting tasks... ${progressBar} ${percent}%`);
       } else {
         console.log(`[${processedCount+1}/${totalTasks}] Exporting parent task: ${task.title}`);
       }
@@ -98,7 +106,13 @@ export async function exportToJira(file: string, cfg: BridgeConfig | LegacyBridg
           try {
             // Show progress
             if (!verbose) {
-              process.stdout.write(`\rExporting tasks... ${Math.round((processedCount / totalTasks) * 100)}%`);
+              // Create a simple progress bar
+              const percent = Math.round((processedCount / totalTasks) * 100);
+              const progressBarWidth = 30;
+              const filledWidth = Math.round((processedCount / totalTasks) * progressBarWidth);
+              const emptyWidth = progressBarWidth - filledWidth;
+              const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+              process.stdout.write(`\rExporting tasks... ${progressBar} ${percent}%`);
             } else {
               console.log(`[${processedCount+1}/${totalTasks}] Exporting subtask: ${subtask.title}`);
             }
@@ -135,10 +149,11 @@ export async function exportToJira(file: string, cfg: BridgeConfig | LegacyBridg
 
   // Clear the progress line
   if (!verbose) {
-    process.stdout.write('\r                                                \r');
+    process.stdout.write('\r                                                                      \r');
+    console.log(`✅ Export complete: ${created} created, ${updated} updated${errors > 0 ? `, ${errors} errors` : ''}`);
+  } else {
+    console.log(`✅ Export complete: ${created} created, ${updated} updated${errors > 0 ? `, ${errors} errors` : ''}`);
   }
-
-  console.log(`✅ Export complete: ${created} created, ${updated} updated${errors > 0 ? `, ${errors} errors` : ''}`);
 }
 
 /** Import options for report generation */
@@ -169,6 +184,8 @@ export async function importFromJira(
   const parentTotal = await jira.countIssues(projectKey, false);
   if (verbose) {
     console.log(`Found ${parentTotal} parent issues in project ${projectKey}`);
+  } else {
+    console.log(`Importing tasks from Jira...`);
   }
 
   // Fetch all parent issues
@@ -178,7 +195,13 @@ export async function importFromJira(
 
   for (let i = 0; i < parentTotal; i += batchSize) {
     if (!verbose) {
-      process.stdout.write(`\rImporting parent tasks... ${Math.round((processedCount / parentTotal) * 100)}%`);
+      // Create a simple progress bar
+      const percent = Math.round((processedCount / parentTotal) * 100);
+      const progressBarWidth = 30;
+      const filledWidth = Math.round((processedCount / parentTotal) * progressBarWidth);
+      const emptyWidth = progressBarWidth - filledWidth;
+      const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+      process.stdout.write(`\rImporting parent tasks... ${progressBar} ${percent}%`);
     }
 
     const issues = await jira.fetchIssues(projectKey, i, batchSize, false);
@@ -189,7 +212,7 @@ export async function importFromJira(
   }
 
   if (!verbose) {
-    process.stdout.write('\r                                                \r');
+    process.stdout.write('\r                                                                      \r');
   }
 
   // Now fetch subtasks for each parent task
@@ -208,7 +231,13 @@ export async function importFromJira(
 
   for (const parentTask of parentTasks) {
     if (!verbose) {
-      process.stdout.write(`\rImporting subtasks... ${Math.round((processedParents / parentTasks.length) * 100)}%`);
+      // Create a simple progress bar
+      const percent = Math.round((processedParents / parentTasks.length) * 100);
+      const progressBarWidth = 30;
+      const filledWidth = Math.round((processedParents / parentTasks.length) * progressBarWidth);
+      const emptyWidth = progressBarWidth - filledWidth;
+      const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+      process.stdout.write(`\rImporting subtasks... ${progressBar} ${percent}%`);
     }
 
     try {
@@ -238,7 +267,7 @@ export async function importFromJira(
   }
 
   if (!verbose) {
-    process.stdout.write('\r                                                \r');
+    process.stdout.write('\r                                                                      \r');
   }
 
   // Write to file
@@ -249,10 +278,16 @@ export async function importFromJira(
   if (generateReport) {
     const reportDir = options.reportDir || 'tasks/import_reports';
     const reportPath = generateImportReport(parentTasks, subtaskCount, projectKey, reportDir);
-    console.log(`✅ Imported ${parentTasks.length} tasks and ${subtaskCount} subtasks to ${out}`);
-    console.log(`📊 Report generated: ${reportPath}`);
+
+    if (verbose) {
+      console.log(`✅ Imported ${parentTasks.length} tasks and ${subtaskCount} subtasks to ${out}`);
+      console.log(`📊 Report generated: ${reportPath}`);
+    } else {
+      console.log(`✅ Import complete: ${parentTasks.length} tasks and ${subtaskCount} subtasks`);
+      console.log(`📊 Report: ${reportPath}`);
+    }
   } else {
-    console.log(`✅ Imported ${parentTasks.length} tasks and ${subtaskCount} subtasks to ${out}`);
+    console.log(`✅ Import complete: ${parentTasks.length} tasks and ${subtaskCount} subtasks`);
   }
 }
 
@@ -325,7 +360,7 @@ function generateImportReport(tasks: TaskmasterTask[], subtaskCount: number, pro
 }
 
 /** Diff: not yet implemented */
-export async function diffProjects(cfg: BridgeConfig | LegacyBridgeConfig) {
+export async function diffProjects(_cfg: BridgeConfig | LegacyBridgeConfig) {
   console.log('🛈 diff not implemented yet');
 }
 
@@ -355,8 +390,19 @@ function textToADF(text: string | null | undefined) {
 
 /**
  * Map a Taskmaster task to a Jira issue
+ * @param task The Taskmaster task to convert
+ * @param projectKeyOrConfig Either a project key string or a BridgeConfig object
  */
-export function mapTaskmasterToJira(task: TaskmasterTask, projectKey: string) {
+export function mapTaskmasterToJira(task: TaskmasterTask, projectKeyOrConfig: string | BridgeConfig | LegacyBridgeConfig) {
+  // Extract the project key from either a string or config object
+  const projectKey = typeof projectKeyOrConfig === 'string'
+    ? projectKeyOrConfig
+    : ('projectKey' in projectKeyOrConfig
+        ? projectKeyOrConfig.projectKey
+        : (projectKeyOrConfig as BridgeConfig).service.type === 'jira'
+          ? ((projectKeyOrConfig as BridgeConfig).service as any).projectKey
+          : '');
+
   return {
     fields: {
       project: { key: projectKey },

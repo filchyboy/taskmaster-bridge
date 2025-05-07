@@ -34,21 +34,57 @@ export async function runOnboarding(): Promise<void> {
     throw new Error(`Unsupported service type: ${serviceType}`);
   }
 
-  rl.close();
-
   // Save configuration
   const configPath = path.resolve('.taskmasterbridgerc');
   fs.writeFileSync(configPath, yaml.stringify(config));
 
-  console.log(`\n✅ Configuration saved to ${configPath}`);
-  console.log('You can now use Taskmaster Bridge with your issue tracking service!');
+  // Close the readline interface
+  rl.close();
+
+  // Display help information with examples
+  console.log('\nSetup complete!');
 
   if (serviceType === 'jira') {
     const jiraConfig = config.service as JiraServiceConfig;
-    console.log(`Try running: taskmaster-bridge export tasks/test-tasks.json --project ${jiraConfig.projectKey}`);
+    console.log('\nYou can run the following commands:');
+    console.log(`- Upload tasks:   taskmaster-bridge export tasks/test-tasks.json --project ${jiraConfig.projectKey}`);
+    console.log(`- Download tasks: taskmaster-bridge import -o taskmaster_tasks.json --project ${jiraConfig.projectKey}`);
+
+    // Add more detailed help
+    console.log('\nCommon flags:');
+    console.log('--verbose                Show detailed progress information');
+    console.log('--project <key>          Override the project key (currently set to ' + jiraConfig.projectKey + ')');
+
+    console.log('\nExport options:');
+    console.log('taskmaster-bridge export <file> [options]');
+    console.log('  <file>                 Path to Taskmaster JSON file to export');
+
+    console.log('\nImport options:');
+    console.log('taskmaster-bridge import [options]');
+    console.log('  -o, --out <file>       Output filename (default: taskmaster_tasks.json)');
+    console.log('  --no-report            Disable generating a Markdown report');
+    console.log('  --report-dir <dir>     Directory for report output (default: tasks/import_reports)');
   } else {
-    console.log(`Try running: taskmaster-bridge export tasks/test-tasks.json`);
+    console.log('\nYou can run the following commands:');
+    console.log(`- Upload tasks:   taskmaster-bridge export tasks/test-tasks.json`);
+    console.log(`- Download tasks: taskmaster-bridge import -o taskmaster_tasks.json`);
+
+    // Add more detailed help
+    console.log('\nCommon flags:');
+    console.log('--verbose                Show detailed progress information');
+
+    console.log('\nExport options:');
+    console.log('taskmaster-bridge export <file> [options]');
+    console.log('  <file>                 Path to Taskmaster JSON file to export');
+
+    console.log('\nImport options:');
+    console.log('taskmaster-bridge import [options]');
+    console.log('  -o, --out <file>       Output filename (default: taskmaster_tasks.json)');
+    console.log('  --no-report            Disable generating a Markdown report');
+    console.log('  --report-dir <dir>     Directory for report output (default: tasks/import_reports)');
   }
+
+  console.log('\nFor more information, run: taskmaster-bridge --help');
 }
 
 /**

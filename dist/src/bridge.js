@@ -25,6 +25,9 @@ export async function exportToJira(file, cfg, verbose = false) {
     if (verbose) {
         console.log(`Exporting ${data.tasks.length} parent tasks and their subtasks to Jira project ${projectKey}...`);
     }
+    else {
+        console.log(`Exporting tasks to Jira...`);
+    }
     let created = 0;
     let updated = 0;
     let errors = 0;
@@ -37,7 +40,13 @@ export async function exportToJira(file, cfg, verbose = false) {
         try {
             // Show progress
             if (!verbose) {
-                process.stdout.write(`\rExporting tasks... ${Math.round((processedCount / totalTasks) * 100)}%`);
+                // Create a simple progress bar
+                const percent = Math.round((processedCount / totalTasks) * 100);
+                const progressBarWidth = 30;
+                const filledWidth = Math.round((processedCount / totalTasks) * progressBarWidth);
+                const emptyWidth = progressBarWidth - filledWidth;
+                const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+                process.stdout.write(`\rExporting tasks... ${progressBar} ${percent}%`);
             }
             else {
                 console.log(`[${processedCount + 1}/${totalTasks}] Exporting parent task: ${task.title}`);
@@ -82,7 +91,13 @@ export async function exportToJira(file, cfg, verbose = false) {
                     try {
                         // Show progress
                         if (!verbose) {
-                            process.stdout.write(`\rExporting tasks... ${Math.round((processedCount / totalTasks) * 100)}%`);
+                            // Create a simple progress bar
+                            const percent = Math.round((processedCount / totalTasks) * 100);
+                            const progressBarWidth = 30;
+                            const filledWidth = Math.round((processedCount / totalTasks) * progressBarWidth);
+                            const emptyWidth = progressBarWidth - filledWidth;
+                            const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+                            process.stdout.write(`\rExporting tasks... ${progressBar} ${percent}%`);
                         }
                         else {
                             console.log(`[${processedCount + 1}/${totalTasks}] Exporting subtask: ${subtask.title}`);
@@ -122,9 +137,12 @@ export async function exportToJira(file, cfg, verbose = false) {
     }
     // Clear the progress line
     if (!verbose) {
-        process.stdout.write('\r                                                \r');
+        process.stdout.write('\r                                                                      \r');
+        console.log(`✅ Export complete: ${created} created, ${updated} updated${errors > 0 ? `, ${errors} errors` : ''}`);
     }
-    console.log(`✅ Export complete: ${created} created, ${updated} updated${errors > 0 ? `, ${errors} errors` : ''}`);
+    else {
+        console.log(`✅ Export complete: ${created} created, ${updated} updated${errors > 0 ? `, ${errors} errors` : ''}`);
+    }
 }
 /** Import Jira issues into Taskmaster JSON */
 export async function importFromJira(out, cfg, verbose = false, options = {}) {
@@ -142,13 +160,22 @@ export async function importFromJira(out, cfg, verbose = false, options = {}) {
     if (verbose) {
         console.log(`Found ${parentTotal} parent issues in project ${projectKey}`);
     }
+    else {
+        console.log(`Importing tasks from Jira...`);
+    }
     // Fetch all parent issues
     const parentTasks = [];
     const batchSize = cfg.batchSize || 100;
     let processedCount = 0;
     for (let i = 0; i < parentTotal; i += batchSize) {
         if (!verbose) {
-            process.stdout.write(`\rImporting parent tasks... ${Math.round((processedCount / parentTotal) * 100)}%`);
+            // Create a simple progress bar
+            const percent = Math.round((processedCount / parentTotal) * 100);
+            const progressBarWidth = 30;
+            const filledWidth = Math.round((processedCount / parentTotal) * progressBarWidth);
+            const emptyWidth = progressBarWidth - filledWidth;
+            const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+            process.stdout.write(`\rImporting parent tasks... ${progressBar} ${percent}%`);
         }
         const issues = await jira.fetchIssues(projectKey, i, batchSize, false);
         for (const issue of issues) {
@@ -157,7 +184,7 @@ export async function importFromJira(out, cfg, verbose = false, options = {}) {
         }
     }
     if (!verbose) {
-        process.stdout.write('\r                                                \r');
+        process.stdout.write('\r                                                                      \r');
     }
     // Now fetch subtasks for each parent task
     if (verbose) {
@@ -172,7 +199,13 @@ export async function importFromJira(out, cfg, verbose = false, options = {}) {
     let processedParents = 0;
     for (const parentTask of parentTasks) {
         if (!verbose) {
-            process.stdout.write(`\rImporting subtasks... ${Math.round((processedParents / parentTasks.length) * 100)}%`);
+            // Create a simple progress bar
+            const percent = Math.round((processedParents / parentTasks.length) * 100);
+            const progressBarWidth = 30;
+            const filledWidth = Math.round((processedParents / parentTasks.length) * progressBarWidth);
+            const emptyWidth = progressBarWidth - filledWidth;
+            const progressBar = '[' + '#'.repeat(filledWidth) + ' '.repeat(emptyWidth) + ']';
+            process.stdout.write(`\rImporting subtasks... ${progressBar} ${percent}%`);
         }
         try {
             // Get the Jira key for this task
@@ -197,7 +230,7 @@ export async function importFromJira(out, cfg, verbose = false, options = {}) {
         processedParents++;
     }
     if (!verbose) {
-        process.stdout.write('\r                                                \r');
+        process.stdout.write('\r                                                                      \r');
     }
     // Write to file
     writeTaskmasterFile(out, { tasks: parentTasks });
@@ -206,11 +239,17 @@ export async function importFromJira(out, cfg, verbose = false, options = {}) {
     if (generateReport) {
         const reportDir = options.reportDir || 'tasks/import_reports';
         const reportPath = generateImportReport(parentTasks, subtaskCount, projectKey, reportDir);
-        console.log(`✅ Imported ${parentTasks.length} tasks and ${subtaskCount} subtasks to ${out}`);
-        console.log(`📊 Report generated: ${reportPath}`);
+        if (verbose) {
+            console.log(`✅ Imported ${parentTasks.length} tasks and ${subtaskCount} subtasks to ${out}`);
+            console.log(`📊 Report generated: ${reportPath}`);
+        }
+        else {
+            console.log(`✅ Import complete: ${parentTasks.length} tasks and ${subtaskCount} subtasks`);
+            console.log(`📊 Report: ${reportPath}`);
+        }
     }
     else {
-        console.log(`✅ Imported ${parentTasks.length} tasks and ${subtaskCount} subtasks to ${out}`);
+        console.log(`✅ Import complete: ${parentTasks.length} tasks and ${subtaskCount} subtasks`);
     }
 }
 /**
@@ -269,7 +308,7 @@ function generateImportReport(tasks, subtaskCount, projectKey, reportDir = 'task
     return reportPath;
 }
 /** Diff: not yet implemented */
-export async function diffProjects(cfg) {
+export async function diffProjects(_cfg) {
     console.log('🛈 diff not implemented yet');
 }
 // ──────────────────────────── mapping helpers ─────────────────────────────
@@ -297,8 +336,18 @@ function textToADF(text) {
 }
 /**
  * Map a Taskmaster task to a Jira issue
+ * @param task The Taskmaster task to convert
+ * @param projectKeyOrConfig Either a project key string or a BridgeConfig object
  */
-export function mapTaskmasterToJira(task, projectKey) {
+export function mapTaskmasterToJira(task, projectKeyOrConfig) {
+    // Extract the project key from either a string or config object
+    const projectKey = typeof projectKeyOrConfig === 'string'
+        ? projectKeyOrConfig
+        : ('projectKey' in projectKeyOrConfig
+            ? projectKeyOrConfig.projectKey
+            : projectKeyOrConfig.service.type === 'jira'
+                ? projectKeyOrConfig.service.projectKey
+                : '');
     return {
         fields: {
             project: { key: projectKey },
