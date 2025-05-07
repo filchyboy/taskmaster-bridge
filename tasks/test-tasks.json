@@ -1,0 +1,177 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Set up project repository",
+      "description": "Initialize the project repository with basic structure and configuration files",
+      "status": "done",
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create GitHub repository",
+          "description": "Set up a new GitHub repository for the project",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 2,
+          "title": "Initialize npm project",
+          "description": "Run npm init and set up package.json",
+          "status": "done",
+          "dependencies": ["1.1"],
+          "parentTaskId": 1
+        },
+        {
+          "id": 3,
+          "title": "Add TypeScript configuration",
+          "description": "Set up TypeScript with appropriate configuration",
+          "status": "done",
+          "dependencies": ["1.2"],
+          "parentTaskId": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implement Jira client",
+      "description": "Create a client for interacting with the Jira API",
+      "status": "done",
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Research Jira API",
+          "description": "Research the Jira API endpoints and authentication methods",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 2,
+          "title": "Implement authentication",
+          "description": "Implement authentication with Jira API",
+          "status": "done",
+          "dependencies": ["2.1"],
+          "parentTaskId": 2
+        },
+        {
+          "id": 3,
+          "title": "Implement issue fetching",
+          "description": "Implement methods to fetch issues from Jira",
+          "status": "done",
+          "dependencies": ["2.2"],
+          "parentTaskId": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Create Taskmaster parser",
+      "description": "Implement functionality to parse and generate Taskmaster JSON",
+      "status": "in-progress",
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Define Taskmaster schema",
+          "description": "Define the schema for Taskmaster JSON files",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 2,
+          "title": "Implement JSON parser",
+          "description": "Create functions to parse Taskmaster JSON files",
+          "status": "done",
+          "dependencies": ["3.1"],
+          "parentTaskId": 3
+        },
+        {
+          "id": 3,
+          "title": "Implement JSON generator",
+          "description": "Create functions to generate Taskmaster JSON files",
+          "status": "in-progress",
+          "dependencies": ["3.2"],
+          "parentTaskId": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Build mapping functionality",
+      "description": "Create mapping functions between Jira and Taskmaster formats",
+      "status": "pending",
+      "priority": "high",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Map Jira to Taskmaster",
+          "description": "Create functions to map Jira issues to Taskmaster tasks",
+          "status": "pending",
+          "dependencies": ["2.3", "3.2"],
+          "parentTaskId": 4
+        },
+        {
+          "id": 2,
+          "title": "Map Taskmaster to Jira",
+          "description": "Create functions to map Taskmaster tasks to Jira issues",
+          "status": "pending",
+          "dependencies": ["2.3", "3.2"],
+          "parentTaskId": 4
+        },
+        {
+          "id": 3,
+          "title": "Handle dependencies",
+          "description": "Implement logic to handle task dependencies during mapping",
+          "status": "pending",
+          "dependencies": ["4.1", "4.2"],
+          "parentTaskId": 4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Implement CLI",
+      "description": "Create command-line interface for the tool",
+      "status": "pending",
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up Commander.js",
+          "description": "Set up Commander.js for CLI argument parsing",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 5
+        },
+        {
+          "id": 2,
+          "title": "Implement export command",
+          "description": "Create command to export Taskmaster tasks to Jira",
+          "status": "pending",
+          "dependencies": ["4.2", "5.1"],
+          "parentTaskId": 5
+        },
+        {
+          "id": 3,
+          "title": "Implement import command",
+          "description": "Create command to import Jira issues as Taskmaster tasks",
+          "status": "pending",
+          "dependencies": ["4.1", "5.1"],
+          "parentTaskId": 5
+        },
+        {
+          "id": 4,
+          "title": "Implement diff command",
+          "description": "Create command to show differences between Taskmaster and Jira",
+          "status": "pending",
+          "dependencies": ["4.1", "4.2", "5.1"],
+          "parentTaskId": 5
+        }
+      ]
+    }
+  ]
+}
