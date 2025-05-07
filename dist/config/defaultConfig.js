@@ -27,8 +27,23 @@ const DEFAULTS = {
  * @returns {BridgeConfig} The loaded configuration
  */
 export function loadConfig(verbose = false) {
+    // Always check for environment variables first
+    const envVars = {
+        jira: {
+            projectKey: process.env.JIRA_PROJECT_KEY,
+            baseUrl: process.env.JIRA_BASE_URL,
+            email: process.env.JIRA_EMAIL,
+            token: process.env.JIRA_TOKEN
+        },
+        linear: {
+            teamKey: process.env.LINEAR_TEAM_KEY,
+            apiKey: process.env.LINEAR_API_KEY
+        }
+    };
+    const envVarsFound = checkEnvironmentVariables(verbose);
     // Check for configuration file
     const rcPath = path.resolve('.taskmasterbridgerc');
+    let fileConfig = {};
     if (fs.existsSync(rcPath)) {
         if (verbose) {
             console.log('📄 Found configuration file: .taskmasterbridgerc');
@@ -40,40 +55,81 @@ export function loadConfig(verbose = false) {
             if (verbose) {
                 console.log('⚠️ Using legacy configuration format. Consider running `taskmaster-bridge setup` to update.');
             }
-            return {
+            fileConfig = {
                 service: {
                     type: 'jira',
-                    projectKey: parsed.projectKey || DEFAULT_JIRA_CONFIG.projectKey,
-                    baseUrl: parsed.jira.baseUrl || DEFAULT_JIRA_CONFIG.baseUrl,
-                    email: parsed.jira.email || DEFAULT_JIRA_CONFIG.email,
-                    token: parsed.jira.token || DEFAULT_JIRA_CONFIG.token
+                    projectKey: parsed.projectKey,
+                    baseUrl: parsed.jira.baseUrl,
+                    email: parsed.jira.email,
+                    token: parsed.jira.token
                 },
                 batchSize: parsed.batchSize || DEFAULTS.batchSize,
                 defaultProjectKey: parsed.projectKey
             };
         }
-        return { ...DEFAULTS, ...parsed };
-    }
-    // Check for environment variables
-    const envVarsFound = checkEnvironmentVariables(verbose);
-    if (envVarsFound) {
-        if (verbose) {
-            console.log('🔑 Using credentials from environment variables');
+        else {
+            fileConfig = parsed;
         }
-        return DEFAULTS;
     }
-    if (verbose) {
-        console.log('⚠️ No configuration file or environment variables found');
+    else if (verbose && !envVarsFound) {
+        console.log('⚠️ No configuration file found');
         console.log('ℹ️ Using default configuration. Run `taskmaster-bridge setup` to configure.');
     }
-    return DEFAULTS;
+    // Start with defaults
+    const config = { ...DEFAULTS };
+    // Apply file config
+    if (fileConfig.service) {
+        config.service = { ...config.service, ...fileConfig.service };
+        if (fileConfig.batchSize)
+            config.batchSize = fileConfig.batchSize;
+        if (fileConfig.defaultProjectKey)
+            config.defaultProjectKey = fileConfig.defaultProjectKey;
+    }
+    // Override with environment variables (highest priority)
+    if (config.service.type === 'jira') {
+        const jiraConfig = config.service;
+        if (envVars.jira.baseUrl) {
+            jiraConfig.baseUrl = envVars.jira.baseUrl;
+            if (verbose)
+                console.log(`🔑 Using JIRA_BASE_URL from environment: ${jiraConfig.baseUrl}`);
+        }
+        if (envVars.jira.email) {
+            jiraConfig.email = envVars.jira.email;
+            if (verbose)
+                console.log(`🔑 Using JIRA_EMAIL from environment: ${jiraConfig.email}`);
+        }
+        if (envVars.jira.token) {
+            jiraConfig.token = envVars.jira.token;
+            if (verbose)
+                console.log(`🔑 Using JIRA_TOKEN from environment: ********`);
+        }
+        if (envVars.jira.projectKey) {
+            jiraConfig.projectKey = envVars.jira.projectKey;
+            if (verbose)
+                console.log(`🔑 Using JIRA_PROJECT_KEY from environment: ${jiraConfig.projectKey}`);
+        }
+    }
+    else if (config.service.type === 'linear') {
+        const linearConfig = config.service;
+        if (envVars.linear.teamKey) {
+            linearConfig.teamKey = envVars.linear.teamKey;
+            if (verbose)
+                console.log(`🔑 Using LINEAR_TEAM_KEY from environment: ${linearConfig.teamKey}`);
+        }
+        if (envVars.linear.apiKey) {
+            linearConfig.apiKey = envVars.linear.apiKey;
+            if (verbose)
+                console.log(`🔑 Using LINEAR_API_KEY from environment: ********`);
+        }
+    }
+    return config;
 }
 /**
  * Check if required environment variables are set
  * @param {boolean} verbose - Whether to output verbose messages
  * @returns {boolean} Whether any environment variables were found
  */
-function checkEnvironmentVariables(verbose = false) {
+export function checkEnvironmentVariables(verbose = false) {
     // Check for Jira environment variables
     const jiraVars = {
         'JIRA_PROJECT_KEY': process.env.JIRA_PROJECT_KEY,

@@ -10,6 +10,7 @@ export interface TaskmasterTask {
   details?: string;
   testStrategy?: string;
   subtasks?: TaskmasterTask[];
+  parentTaskId?: number;  // For subtasks, references the parent task ID
 }
 
 export interface TaskmasterFile {

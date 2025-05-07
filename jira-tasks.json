@@ -1,0 +1,64 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Set up project repository",
+      "description": "Initialize the project repository with basic structure and configuration files",
+      "status": "pending"
+    },
+    {
+      "id": 2,
+      "title": "Implement Jira client",
+      "description": "Create a client for interacting with the Jira API",
+      "status": "pending"
+    },
+    {
+      "id": 3,
+      "title": "Create Taskmaster parser",
+      "description": "Implement functionality to parse and generate Taskmaster JSON",
+      "status": "pending"
+    },
+    {
+      "id": 4,
+      "title": "Build mapping functionality",
+      "description": "Create mapping functions between Jira and Taskmaster formats",
+      "status": "pending"
+    },
+    {
+      "id": 5,
+      "title": "Implement CLI",
+      "description": "Create command-line interface for the tool",
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 6,
+          "title": "Set up Commander.js",
+          "description": "Set up Commander.js for CLI argument parsing",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 7,
+          "title": "Implement export command",
+          "description": "Create command to export Taskmaster tasks to Jira",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 8,
+          "title": "Implement import command",
+          "description": "Create command to import Jira issues as Taskmaster tasks",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 9,
+          "title": "Implement diff command",
+          "description": "Create command to show differences between Taskmaster and Jira",
+          "status": "pending",
+          "parentTaskId": 5
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@
     "license": "MIT",
     "type": "module",
     "bin": {
-      "taskmaster-bridge": "dist/cli.js"
+      "taskmaster-bridge": "dist/bin/cli.js"
     },
     "files": [
       "dist"

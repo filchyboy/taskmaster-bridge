@@ -24,6 +24,12 @@ export interface BridgeConfig {
  */
 export declare function loadConfig(verbose?: boolean): BridgeConfig;
 /**
+ * Check if required environment variables are set
+ * @param {boolean} verbose - Whether to output verbose messages
+ * @returns {boolean} Whether any environment variables were found
+ */
+export declare function checkEnvironmentVariables(verbose?: boolean): boolean;
+/**
  * Get Jira client options from the configuration
  */
 export declare function getJiraOptions(config: BridgeConfig): JiraClientOptions;

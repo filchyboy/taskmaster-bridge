@@ -57,6 +57,17 @@ export async function runOnboarding(): Promise<void> {
 async function setupJiraConfig(rl: readline.Interface): Promise<BridgeConfig> {
   console.log('\n📋 Setting up Jira configuration...');
 
+  // Check for environment variables first
+  const envVars = {
+    projectKey: process.env.JIRA_PROJECT_KEY,
+    baseUrl: process.env.JIRA_BASE_URL,
+    email: process.env.JIRA_EMAIL,
+    token: process.env.JIRA_TOKEN
+  };
+
+  // Check if any Jira environment variables are set
+  const hasJiraEnvVars = Object.values(envVars).some(value => !!value);
+
   // Create Jira service config
   const jiraConfig: JiraServiceConfig = {
     type: 'jira',
@@ -66,34 +77,92 @@ async function setupJiraConfig(rl: readline.Interface): Promise<BridgeConfig> {
     token: ''
   };
 
-  // Prompt for Jira URL
-  jiraConfig.baseUrl = await prompt(
-    rl,
-    'Enter your Jira URL (e.g., https://your-company.atlassian.net):',
-    'https://your-company.atlassian.net'
-  );
+  if (hasJiraEnvVars) {
+    console.log('✅ Found Jira credentials in your environment variables.');
 
-  // Prompt for Project Key
+    // Use environment variables directly for what's available
+    if (envVars.baseUrl) {
+      jiraConfig.baseUrl = envVars.baseUrl;
+      console.log(`Using JIRA_BASE_URL: ${jiraConfig.baseUrl}`);
+    }
+
+    if (envVars.email) {
+      jiraConfig.email = envVars.email;
+      console.log(`Using JIRA_EMAIL: ${jiraConfig.email}`);
+    }
+
+    if (envVars.token) {
+      jiraConfig.token = envVars.token;
+      console.log(`Using JIRA_TOKEN: ********`);
+    }
+
+    console.log(''); // Add a blank line for readability
+  } else {
+    console.log('ℹ️ No Jira credentials found in your environment variables.');
+
+    // Ask user if they want instructions or to enter credentials directly
+    const choice = await promptChoice(
+      rl,
+      'How would you like to proceed?',
+      [
+        'Enter credentials and store them locally in a YAML file',
+        'Show instructions for adding credentials to your environment'
+      ],
+      'Enter credentials and store them locally in a YAML file'
+    );
+
+    if (choice === 'Show instructions for adding credentials to your environment') {
+      console.log('\n📝 To add Jira credentials to your environment, add these lines to your shell profile:');
+      console.log('```');
+      console.log('export JIRA_BASE_URL="https://your-company.atlassian.net"');
+      console.log('export JIRA_EMAIL="your-email@example.com"');
+      console.log('export JIRA_TOKEN="your-api-token"');
+      console.log('```');
+      console.log('\nAfter adding these to your profile, restart your terminal or run:');
+      console.log('```');
+      console.log('source ~/.bash_profile  # or ~/.zshrc, ~/.bashrc, etc.');
+      console.log('```');
+      console.log('\nLet\'s continue with the setup to create a local configuration file.\n');
+    }
+  }
+
+  // Prompt for values that aren't set in environment variables
+  if (!jiraConfig.baseUrl) {
+    // Prompt for company name and construct the full URL
+    const company = await prompt(
+      rl,
+      'Enter your Atlassian company name:',
+      'your-company'
+    );
+
+    jiraConfig.baseUrl = `https://${company}.atlassian.net`;
+  }
+
+  // Always prompt for Project Key since it should be configurable per project
   jiraConfig.projectKey = await prompt(
     rl,
     'Enter your Jira project key (e.g., TEST):',
     'TEST'
   );
 
-  // Prompt for Jira email
-  jiraConfig.email = await prompt(
-    rl,
-    'Enter your Jira email address:',
-    ''
-  );
+  // Prompt for email if not set
+  if (!jiraConfig.email) {
+    jiraConfig.email = await prompt(
+      rl,
+      'Enter your Jira email address:',
+      ''
+    );
+  }
 
-  // Prompt for Jira API token
-  jiraConfig.token = await prompt(
-    rl,
-    'Enter your Jira API token (create one at https://id.atlassian.com/manage-profile/security/api-tokens):',
-    '',
-    true
-  );
+  // Prompt for token if not set
+  if (!jiraConfig.token) {
+    jiraConfig.token = await prompt(
+      rl,
+      'Enter your Jira API token (create one at https://id.atlassian.com/manage-profile/security/api-tokens):',
+      '',
+      true
+    );
+  }
 
   return {
     service: jiraConfig,
@@ -108,6 +177,15 @@ async function setupJiraConfig(rl: readline.Interface): Promise<BridgeConfig> {
 async function setupLinearConfig(rl: readline.Interface): Promise<BridgeConfig> {
   console.log('\n📋 Setting up Linear configuration...');
 
+  // Check for environment variables first
+  const envVars = {
+    teamKey: process.env.LINEAR_TEAM_KEY,
+    apiKey: process.env.LINEAR_API_KEY
+  };
+
+  // Check if any Linear environment variables are set
+  const hasLinearEnvVars = Object.values(envVars).some(value => !!value);
+
   // Create Linear service config
   const linearConfig: LinearServiceConfig = {
     type: 'linear',
@@ -115,20 +193,67 @@ async function setupLinearConfig(rl: readline.Interface): Promise<BridgeConfig> 
     apiKey: ''
   };
 
-  // Prompt for Linear team key
-  linearConfig.teamKey = await prompt(
-    rl,
-    'Enter your Linear team key:',
-    ''
-  );
+  if (hasLinearEnvVars) {
+    console.log('✅ Found Linear credentials in your environment variables.');
 
-  // Prompt for Linear API key
-  linearConfig.apiKey = await prompt(
-    rl,
-    'Enter your Linear API key (create one at https://linear.app/settings/api):',
-    '',
-    true
-  );
+    // Use environment variables directly for what's available
+    if (envVars.teamKey) {
+      linearConfig.teamKey = envVars.teamKey;
+      console.log(`Using LINEAR_TEAM_KEY: ${linearConfig.teamKey}`);
+    }
+
+    if (envVars.apiKey) {
+      linearConfig.apiKey = envVars.apiKey;
+      console.log(`Using LINEAR_API_KEY: ********`);
+    }
+
+    console.log(''); // Add a blank line for readability
+  } else {
+    console.log('ℹ️ No Linear credentials found in your environment variables.');
+
+    // Ask user if they want instructions or to enter credentials directly
+    const choice = await promptChoice(
+      rl,
+      'How would you like to proceed?',
+      [
+        'Enter credentials and store them locally in a YAML file',
+        'Show instructions for adding credentials to your environment'
+      ],
+      'Enter credentials and store them locally in a YAML file'
+    );
+
+    if (choice === 'Show instructions for adding credentials to your environment') {
+      console.log('\n📝 To add Linear credentials to your environment, add these lines to your shell profile:');
+      console.log('```');
+      console.log('export LINEAR_TEAM_KEY="YOUR_TEAM_KEY"');
+      console.log('export LINEAR_API_KEY="your-linear-api-key"');
+      console.log('```');
+      console.log('\nAfter adding these to your profile, restart your terminal or run:');
+      console.log('```');
+      console.log('source ~/.bash_profile  # or ~/.zshrc, ~/.bashrc, etc.');
+      console.log('```');
+      console.log('\nLet\'s continue with the setup to create a local configuration file.\n');
+    }
+  }
+
+  // Prompt for team key if not set
+  if (!linearConfig.teamKey) {
+    linearConfig.teamKey = await prompt(
+      rl,
+      'Enter your Linear team key:',
+      ''
+    );
+  }
+
+  // Prompt for API key if not set
+  if (!linearConfig.apiKey) {
+    linearConfig.apiKey = await prompt(
+      rl,
+      'Enter your Linear API key (create one at https://linear.app/settings/api):',
+      '',
+      true
+    );
+  }
 
   return {
     service: linearConfig,

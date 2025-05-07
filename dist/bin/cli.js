@@ -50,17 +50,21 @@ program
     }
     // Get project key (from CLI option, service config, or default)
     const projectKey = getProjectKey(cfg, globalOpts.project);
-    console.log(`Using ${cfg.service.type} project key: ${projectKey}`);
+    if (verbose) {
+        console.log(`Using ${cfg.service.type} project key: ${projectKey}`);
+    }
     // Export to Jira
     await exportToJira(file, {
         projectKey,
         batchSize: cfg.batchSize,
         jira: getJiraOptions(cfg)
-    });
+    }, verbose);
 });
 program
     .command('import')
     .option('-o, --out <file>', 'Output filename', 'taskmaster_tasks.json')
+    .option('--no-report', 'Disable generating a Markdown report')
+    .option('--report-dir <directory>', 'Directory for report output', 'tasks/import_reports')
     .description('Download issues and write Taskmaster‑style JSON')
     .action(async (opts) => {
     const globalOpts = program.opts();
@@ -89,12 +93,17 @@ program
     }
     // Get project key (from CLI option, service config, or default)
     const projectKey = getProjectKey(cfg, globalOpts.project);
-    console.log(`Using ${cfg.service.type} project key: ${projectKey}`);
+    if (verbose) {
+        console.log(`Using ${cfg.service.type} project key: ${projectKey}`);
+    }
     // Import from Jira
     await importFromJira(opts.out, {
         projectKey,
         batchSize: cfg.batchSize,
         jira: getJiraOptions(cfg)
+    }, verbose, {
+        generateReport: opts.report,
+        reportDir: opts.reportDir
     });
 });
 program
@@ -127,7 +136,9 @@ program
     }
     // Get project key (from CLI option, service config, or default)
     const projectKey = getProjectKey(cfg, globalOpts.project);
-    console.log(`Using ${cfg.service.type} project key: ${projectKey}`);
+    if (verbose) {
+        console.log(`Using ${cfg.service.type} project key: ${projectKey}`);
+    }
     // Diff with Jira
     await diffProjects({
         projectKey,
